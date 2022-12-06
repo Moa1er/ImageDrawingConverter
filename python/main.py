@@ -12,7 +12,10 @@ from PIL import Image
 import sys
 print(sys.setrecursionlimit(200000))
 
-imgToDraw = Image.open('../assets-test/smile-face.png') # Can be many different formats.
+# to launch in debug mode
+imgToDraw = Image.open('assets-test\\smile-face-small.png')
+# to launch normaly
+# imgToDraw = Image.open('..\\assets-test\\smile-face.png')
 imgPixels = imgToDraw.load()
 
 imgWidth = imgToDraw.size[0]
@@ -40,7 +43,7 @@ debugImg  = Image.new( mode = "RGB", size = (imgWidth, imgHeight))
 debugPixels = debugImg.load()
 
 root = tk.Tk()
-canvas = tk.Canvas(root, height=400, width=400)
+canvas = tk.Canvas(root, height=imgHeight, width=imgWidth)
 canvas.pack()
 
     
@@ -59,8 +62,6 @@ class Pixel:
     self.y = y # y position of the pixel
     self.color = color # color is a tuple (r,g,b)
 
-print(imgPixels[191, 307])    
-
 def draw_point():
     global actualX
     global element
@@ -75,7 +76,7 @@ def cutImageInElements():
     print("cutImageInElements");
     print(imgPixels[0, 0])
 
-    pixel = Pixel(0, 200, imgPixels[0, 200]);
+    pixel = Pixel(0, 0, imgPixels[0, 0]);
     element = Element(pixel, pixel.color);
     completeElement(element.pixels)
     debugImg.show()
@@ -116,8 +117,8 @@ def completeElement(elemPixels):
             # print("Going right") 
             # print(pixelAppended.x, pixelAppended.y, pixelAppended.color)
             completeElement(elemPixels)
-        else:
-            return
+        # else:
+        #     return
     
     # if(xLeftIdx >= 0 and isColorAlmostSame(imgPixels[xIndex, yIndex], imgPixels[xLeftIdx, yIndex]) and isPixelChecked[xLeftIdx][yIndex] == False):
     #     pixelAppended = Pixel(xLeftIdx, yIndex, imgPixels[xLeftIdx, yIndex])

@@ -1,17 +1,13 @@
 import tkinter as tk
 import random
 
-def make_segment():
-    return [random.randrange(0, 800) for _ in range(4)]
+list = [1, 2, 3]
 
-def draw_random_lines():
-    canvas.create_line(*make_segment())
-    root.after(100, draw_random_lines)
+def test(idx):
+    if idx < len(list) and list[idx] == 3:
+        print("nope")
+        return list[idx]
 
-root = tk.Tk()
-canvas = tk.Canvas(root, height=800, width=800)
-canvas.pack()
+    return
 
-draw_random_lines()
-
-root.mainloop()
+print(test(3))

@@ -10,9 +10,9 @@ import random
 from PIL import Image
 
 import sys
-print(sys.setrecursionlimit(200000))
+sys.setrecursionlimit(200000)
 
-imgToDraw = Image.open('../assets-test/smile-face.png') # Can be many different formats.
+imgToDraw = Image.open('../assets-test/woman-bar.png') # Can be many different formats.
 imgPixels = imgToDraw.load()
 
 imgWidth = imgToDraw.size[0]
@@ -43,6 +43,7 @@ root = tk.Tk()
 canvas = tk.Canvas(root, height=400, width=400)
 canvas.pack()
 
+reccursionCount = 0
     
 class Element:
     def __init__(self, firstPixel, color):
@@ -67,11 +68,10 @@ def draw_point():
     if(actualX >= len(element.pixels)):
         return
     canvas.create_rectangle((element.pixels[actualX].x, element.pixels[actualX].y, element.pixels[actualX].x + 1, element.pixels[actualX].y + 1), fill='red', width=1)
-    actualX += 10
+    actualX += 1
     root.after(1, draw_point)
 
 def cutImageInElements():
-    global element
     print("cutImageInElements");
     print(imgPixels[0, 0])
 
@@ -89,6 +89,8 @@ def cutImageInElements():
 
 
 def completeElement(elemPixels):
+    global reccursionCount
+    reccursionCount += 1
     # print("createElement");
 
     nbPixels = len(elemPixels);
@@ -117,9 +119,10 @@ def completeElement(elemPixels):
             # print(pixelAppended.x, pixelAppended.y, pixelAppended.color)
             completeElement(elemPixels)
         else:
-            return
+            #add point to array of point not checked
+            blabla = 10
     
-    # if(xLeftIdx >= 0 and isColorAlmostSame(imgPixels[xIndex, yIndex], imgPixels[xLeftIdx, yIndex]) and isPixelChecked[xLeftIdx][yIndex] == False):
+    # if(xLeftIdx >= 0 and isColorAlmostSame(imgPixels[elemPixels[0].x, elemPixels[0].y], imgPixels[xLeftIdx, yIndex]) and isPixelChecked[xLeftIdx][yIndex] == False):
     #     pixelAppended = Pixel(xLeftIdx, yIndex, imgPixels[xLeftIdx, yIndex])
     #     elemPixels.append(pixelAppended)
 
@@ -157,11 +160,9 @@ def isColorAlmostSame(pixel1, pixel2):
     else:
         return False
 
-def testPointer(testArr):
-    testArr[0] = 100
-
     
 if __name__ == '__main__':
     cutImageInElements();
+    print(reccursionCount)
     draw_point()
     root.mainloop()

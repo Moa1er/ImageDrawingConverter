@@ -1,19 +1,12 @@
-#how to use pil for images
-# print (imgToDraw.size)  # Get the width and hight of the image for iterating over
-# print (imgPixels[141,127])  # Get the RGBA Value of the a pixel of an image
-# print (imgPixels[399,399])
-# pix[x,y] = value  # Set the RGBA Value of the image (tuple)
-# im.save('alive_parrot.png')  # Save the modified pixels as .
-
 import tkinter as tk
 import random
 from PIL import Image
 
 import sys
-print(sys.setrecursionlimit(200000))
+sys.setrecursionlimit(200000)
 
 # to launch in debug mode
-imgToDraw = Image.open('assets-test\\smile-face-small.png')
+imgToDraw = Image.open('assets-test\\smile-face.png')
 # to launch normaly
 # imgToDraw = Image.open('..\\assets-test\\smile-face.png')
 imgPixels = imgToDraw.load()
@@ -36,7 +29,6 @@ isPixelChecked = [[ False for y in range( imgWidth ) ] for x in range( imgHeight
 # the higher the value is the more colors will be considered the same
 COLOR_TOLERANCE = 10
 
-element = "test"
 actualX = 0
 
 debugImg  = Image.new( mode = "RGB", size = (imgWidth, imgHeight))
@@ -46,6 +38,7 @@ root = tk.Tk()
 canvas = tk.Canvas(root, height=imgHeight, width=imgWidth)
 canvas.pack()
 
+reccursionCount = 0
     
 class Element:
     def __init__(self, firstPixel, color):
@@ -68,7 +61,7 @@ def draw_point():
     if(actualX >= len(element.pixels)):
         return
     canvas.create_rectangle((element.pixels[actualX].x, element.pixels[actualX].y, element.pixels[actualX].x + 1, element.pixels[actualX].y + 1), fill='red', width=1)
-    actualX += 10
+    actualX += 1
     root.after(1, draw_point)
 
 def cutImageInElements():
@@ -90,6 +83,8 @@ def cutImageInElements():
 
 
 def completeElement(elemPixels):
+    global reccursionCount
+    reccursionCount += 1
     # print("createElement");
 
     nbPixels = len(elemPixels);
@@ -117,16 +112,17 @@ def completeElement(elemPixels):
             # print("Going right") 
             # print(pixelAppended.x, pixelAppended.y, pixelAppended.color)
             completeElement(elemPixels)
-        # else:
-        #     return
+        else:
+            #add point to array of point not checked
+            blabla = 10
     
-    # if(xLeftIdx >= 0 and isColorAlmostSame(imgPixels[xIndex, yIndex], imgPixels[xLeftIdx, yIndex]) and isPixelChecked[xLeftIdx][yIndex] == False):
-    #     pixelAppended = Pixel(xLeftIdx, yIndex, imgPixels[xLeftIdx, yIndex])
-    #     elemPixels.append(pixelAppended)
+    if(xLeftIdx >= 0 and isColorAlmostSame(imgPixels[elemPixels[0].x, elemPixels[0].y], imgPixels[xLeftIdx, yIndex]) and isPixelChecked[xLeftIdx][yIndex] == False):
+        pixelAppended = Pixel(xLeftIdx, yIndex, imgPixels[xLeftIdx, yIndex])
+        elemPixels.append(pixelAppended)
 
-    #     # print("Going left")
-    #     # print(pixelAppended.x, pixelAppended.y, pixelAppended.color)
-    #     completeElement(elemPixels)
+        # print("Going left")
+        # print(pixelAppended.x, pixelAppended.y, pixelAppended.color)
+        completeElement(elemPixels)
 
     if(yBottomIdx < imgHeight and isColorAlmostSame(imgPixels[elemPixels[0].x, elemPixels[0].y], imgPixels[xIndex, yBottomIdx]) and isPixelChecked[xIndex][yBottomIdx] == False):
         pixelAppended = Pixel(xIndex, yBottomIdx, imgPixels[xIndex, yBottomIdx])
@@ -158,11 +154,9 @@ def isColorAlmostSame(pixel1, pixel2):
     else:
         return False
 
-def testPointer(testArr):
-    testArr[0] = 100
-
     
 if __name__ == '__main__':
     cutImageInElements();
+    print(reccursionCount)
     draw_point()
     root.mainloop()

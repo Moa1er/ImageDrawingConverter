@@ -5,10 +5,14 @@ from PIL import Image
 import sys
 sys.setrecursionlimit(200000)
 
+## WINDOWS
 # to launch in debug mode
-imgToDraw = Image.open('assets-test\\smile-face.png')
+imgToDraw = Image.open('assets-test\\smile-face-small.png')
 # to launch normaly
 # imgToDraw = Image.open('..\\assets-test\\smile-face.png')
+## LINUX
+# imgToDraw = Image.open('../assets-test/smile-face.png')
+
 imgPixels = imgToDraw.load()
 
 imgWidth = imgToDraw.size[0]
@@ -31,21 +35,20 @@ COLOR_TOLERANCE = 10
 
 actualX = 0
 
-debugImg  = Image.new( mode = "RGB", size = (imgWidth, imgHeight))
-debugPixels = debugImg.load()
+# debugImg  = Image.new( mode = "RGB", size = (imgWidth, imgHeight))
+# debugPixels = debugImg.load()
 
 root = tk.Tk()
 canvas = tk.Canvas(root, height=imgHeight, width=imgWidth)
 canvas.pack()
 
 reccursionCount = 0
-    
-class Element:
-    def __init__(self, firstPixel, color):
-        self.pixels = [];
-        self.addPixel(firstPixel)
-        self.color = color;
 
+class Element:
+    def __init__(self, color):
+        self.pixels = [];
+        self.color = color;
+    
     def addPixel(self, pixel):
         self.pixels.append(pixel);
 
@@ -67,12 +70,8 @@ def draw_point():
 def cutImageInElements():
     global element
     print("cutImageInElements");
-    print(imgPixels[0, 0])
-
-    pixel = Pixel(0, 0, imgPixels[0, 0]);
-    element = Element(pixel, pixel.color);
     completeElement(element.pixels)
-    debugImg.show()
+    # debugImg.show()
 
     # printPixelsArr(element.pixels)
     # completeElemResult = completeElement(element)
@@ -84,14 +83,18 @@ def cutImageInElements():
 
 def completeElement(elemPixels):
     global reccursionCount
+    global isPixelChecked
     reccursionCount += 1
     # print("createElement");
 
+    if reccursionCount == 1715:
+        print("debug")
+
     nbPixels = len(elemPixels);
     xIndex = elemPixels[nbPixels - 1].x
-    # print(xIndex)
+    print(xIndex)
     yIndex = elemPixels[nbPixels - 1].y
-    # print(yIndex)
+    print(yIndex)
     xRightIdx = elemPixels[nbPixels - 1].x + 1
     # print(xRightIdx)
     xLeftIdx = elemPixels[nbPixels - 1].x - 1
@@ -102,9 +105,9 @@ def completeElement(elemPixels):
     # print(yTopIdx)
 
     isPixelChecked[xIndex][yIndex] = True
-    debugPixels[xIndex, yIndex] = elemPixels[nbPixels - 1].color
+    # debugPixels[xIndex, yIndex] = elemPixels[nbPixels - 1].color
 
-    if(xRightIdx < imgWidth and isPixelChecked[xRightIdx][yIndex] == False):
+    if((xRightIdx < imgWidth) and isPixelChecked[xRightIdx][yIndex] == False):
         if(isColorAlmostSame(imgPixels[elemPixels[0].x, elemPixels[0].y], imgPixels[xRightIdx, yIndex])):
             pixelAppended = Pixel(xRightIdx, yIndex, imgPixels[xRightIdx, yIndex])
             elemPixels.append(pixelAppended)
@@ -116,29 +119,44 @@ def completeElement(elemPixels):
             #add point to array of point not checked
             blabla = 10
     
-    if(xLeftIdx >= 0 and isColorAlmostSame(imgPixels[elemPixels[0].x, elemPixels[0].y], imgPixels[xLeftIdx, yIndex]) and isPixelChecked[xLeftIdx][yIndex] == False):
-        pixelAppended = Pixel(xLeftIdx, yIndex, imgPixels[xLeftIdx, yIndex])
-        elemPixels.append(pixelAppended)
+    if((xLeftIdx >= 0) and isPixelChecked[xLeftIdx][yIndex] == False):
+    # if((xLeftIdx >= 0)):
+        if(isColorAlmostSame(imgPixels[elemPixels[0].x, elemPixels[0].y], imgPixels[xLeftIdx, yIndex])):
+            pixelAppended = Pixel(xLeftIdx, yIndex, imgPixels[xLeftIdx, yIndex])
+            elemPixels.append(pixelAppended)
 
-        # print("Going left")
-        # print(pixelAppended.x, pixelAppended.y, pixelAppended.color)
-        completeElement(elemPixels)
+            # print("Going left")
+            # print(pixelAppended.x, pixelAppended.y, pixelAppended.color)
+            completeElement(elemPixels)
+        else:
+            #add point to array of point not checked
+            blabla = 10
 
-    if(yBottomIdx < imgHeight and isColorAlmostSame(imgPixels[elemPixels[0].x, elemPixels[0].y], imgPixels[xIndex, yBottomIdx]) and isPixelChecked[xIndex][yBottomIdx] == False):
-        pixelAppended = Pixel(xIndex, yBottomIdx, imgPixels[xIndex, yBottomIdx])
-        elemPixels.append(pixelAppended)
+    # if((yBottomIdx < imgHeight)):
+    if((yBottomIdx < imgHeight) and isPixelChecked[xIndex][yBottomIdx] == False):
+        if(isColorAlmostSame(imgPixels[elemPixels[0].x, elemPixels[0].y], imgPixels[xIndex, yBottomIdx])):
+            pixelAppended = Pixel(xIndex, yBottomIdx, imgPixels[xIndex, yBottomIdx])
+            elemPixels.append(pixelAppended)
 
-        # print("Going bottom")
-        # print(pixelAppended.x, pixelAppended.y, pixelAppended.color)
-        completeElement(elemPixels)
+            # print("Going bottom")
+            # print(pixelAppended.x, pixelAppended.y, pixelAppended.color)
+            completeElement(elemPixels)
+        else:
+            #add point to array of point not checked
+            blabla = 10
     
-    if(yTopIdx >= 0 and isColorAlmostSame(imgPixels[elemPixels[0].x, elemPixels[0].y], imgPixels[xIndex, yTopIdx]) and isPixelChecked[xIndex][yTopIdx] == False):
-        pixelAppended = Pixel(xIndex, yTopIdx, imgPixels[xIndex, yTopIdx])
-        elemPixels.append(pixelAppended)
+    if((yTopIdx >= 0) and isPixelChecked[xIndex][yTopIdx] == False):
+    # if((yTopIdx >= 0)):
+        if(isColorAlmostSame(imgPixels[elemPixels[0].x, elemPixels[0].y], imgPixels[xIndex, yTopIdx])):
+            pixelAppended = Pixel(xIndex, yTopIdx, imgPixels[xIndex, yTopIdx])
+            elemPixels.append(pixelAppended)
 
-        # print("Going top")
-        # print(pixelAppended.x, pixelAppended.y, pixelAppended.color)
-        completeElement(elemPixels)
+            # print("Going top")
+            # print(pixelAppended.x, pixelAppended.y, pixelAppended.color)
+            completeElement(elemPixels)
+        else:
+            #add point to array of point not checked
+            blabla = 10
     
 
 def printPixelsArr(pixelsArr):
@@ -156,7 +174,10 @@ def isColorAlmostSame(pixel1, pixel2):
 
     
 if __name__ == '__main__':
+    pixel = Pixel(0, 0, imgPixels[0, 0]);
+    element = Element(pixel.color);
+    element.addPixel(pixel);
     cutImageInElements();
-    print(reccursionCount)
+    print("NbReccursive call: ", reccursionCount)
     draw_point()
     root.mainloop()

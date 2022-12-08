@@ -1,31 +1,5 @@
+from typing import List
 from PIL import Image
-import time
-import random
-import string
-
-start_time = time.time()
-
-COLOR_TOLERANCE = 100
-
-imgName = "woman-bar"
-
-imgToDraw = Image.open(R'../assets-test/' + imgName + ".png")
-# imgToDraw = Image.open(R'../assets-test/smile-face.png')
-# imgToDraw = Image.open('assets-test\\smile-face.png')
-imgPixels = imgToDraw.load()
-
-imgWidth = imgToDraw.size[0]
-imgHeight = imgToDraw.size[1]
-
-pixelsChecked = set()
-pixelsNotChecked = set()
-
-debugImg  = Image.new( mode = "RGB", size = (imgWidth, imgHeight))
-debugPixels = debugImg.load()
-
-# an element is a part of the image, it's a bunch of pixels with approximately the same color
-# and each pixel touch at least one other pixel of the same element
-elements = [];
 
 class Pixel:
   def __init__(self, x: int, y: int, color: tuple):
@@ -48,12 +22,12 @@ Fills array with all pixel connected to the seed point (xy) with the same color.
 :param xy: Seed position (a 2-item coordinate tuple). See
     :ref:`coordinate-system`.
 """
-def floodNofill(pixels, xy, elementToAddTo):
+def floodNofill(pixels, xy, elementToAddTo, debug = False):
     x, y = xy
     try:
         background = pixels[x, y]
         elementToAddTo.addPixel(Pixel(x, y, pixels[x, y]))
-        debugPixels[x, y] = pixels[x, y]
+        if debug: debugPixels[x, y] = pixels[x, y]
         pixelsChecked.add((x, y))
         if (x, y) in pixelsNotChecked:
             pixelsNotChecked.remove((x, y))
@@ -76,10 +50,10 @@ def floodNofill(pixels, xy, elementToAddTo):
                     pass
                 else:
                     full_edge.add((s, t))
-                    fill = isColorAlmostSame(p, background)
+                    fill = (p == background)
                     if fill:
                         elementToAddTo.addPixel(Pixel(s, t, pixels[s, t]))
-                        debugPixels[s, t] = elementToAddTo.color
+                        if debug: debugPixels[s, t] = elementToAddTo.color
                         new_edge.add((s, t))
                         pixelsChecked.add((s, t))
                         if (s, t) in pixelsNotChecked:
@@ -87,43 +61,37 @@ def floodNofill(pixels, xy, elementToAddTo):
                     else:
                         if (s, t) not in pixelsChecked:
                             pixelsNotChecked.add((s, t))
-                        # print("not same color")
-                        # print(s, t)
         full_edge = edge  # discard pixels processed
         edge = new_edge
 
+"""
+Cuts an input image in elements, each element is a part of the image, 
+it's a bunch of pixels with the same color
 
-def isColorAlmostSame(pixel1, pixel2):
-    redDiff = abs(pixel1[0] - pixel2[0])
-    greenDiff = abs(pixel1[1] - pixel2[1])
-    blueDiff = abs(pixel1[2] - pixel2[2])
-    if(redDiff < COLOR_TOLERANCE and greenDiff < COLOR_TOLERANCE and blueDiff < COLOR_TOLERANCE):
-        return True
-    else:
-        return False
+:param image: Target image.
+:param xy: Seed position (a 2-item coordinate tuple). See
+    :ref:`coordinate-system`.
+"""   
+def getElemsInImg(imgWidth, imgHeight, imgPixels, debug = False):
+    # an element is a part of the image, it's a bunch of pixels with 
+    # approximately the same color
+    # and each pixel touch at least one other pixel of the same element
+    elements = [];
 
-# def isColorAlmostSame(pixel1, pixel2):
-#     redDiff = abs(pixel1[0] - pixel2[0])
-#     greenDiff = abs(pixel1[1] - pixel2[1])
-#     blueDiff = abs(pixel1[2] - pixel2[2])
-#     totalDiff = redDiff + greenDiff + blueDiff
-#     if(totalDiff < COLOR_TOLERANCE):
-#         return True
-#     else:
-#         return False
+    #creates two sets for the function flooNoFill
+    global pixelsChecked
+    pixelsChecked = set()
+    global pixelsNotChecked
+    pixelsNotChecked = set()
 
-def get_random_string(length):
-    # choose from all lowercase letter
-    letters = string.ascii_lowercase
-    result_str = ''.join(random.choice(letters) for i in range(length))
-    return result_str
+    if debug:
+        #creates a debug img to see the result
+        debugImg  = Image.new(mode="RGB", size=(imgWidth, imgHeight))
+        global debugPixels
+        debugPixels = debugImg.load()
 
-if __name__ == "__main__":
     pixelsNotChecked.add((0, 0))
     while(len(pixelsNotChecked) > 0):
-        # print("new call")
-        # if(len(elements) > 0):
-        #     print("color lastcall: ", elements[len(elements) - 1].color)
         startingPoint = pixelsNotChecked.pop()
         while(startingPoint in pixelsChecked):
             if(len(pixelsNotChecked) == 0):
@@ -131,10 +99,10 @@ if __name__ == "__main__":
             startingPoint = pixelsNotChecked.pop()
             
         elements.append(Element(imgPixels[startingPoint[0], startingPoint[1]]))
-        floodNofill(imgPixels, startingPoint, elements[len(elements) - 1])
-    
-    print("nb elements: ", len(elements))
-    print("--- %s seconds ---" % (time.time() - start_time))
-    debugImg.show()
+        floodNofill(imgPixels, startingPoint, elements[len(elements) - 1], debug = debug)
 
-    debugImg.save("results/" + imgName + "-" + str(len(elements)) + "-" + get_random_string(12) + ".png")
+    if debug:
+        debugImg.show()
+
+    return elements
+    

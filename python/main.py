@@ -1,3 +1,4 @@
+import tkinter as tk
 from PIL import Image
 import time
 import random
@@ -7,11 +8,12 @@ from colorExtraction import *
 from floodNoFill import *
 from elementsCleaner import *
 
+
 start_time_total = time.time()
 start_time = time.time()
 
 imgName = "woman-bar-chosen-colors-20-200-20"
-imgName = "smile-face-small-dur"
+imgName = "woman-bar-chosen-colors-20-200-20"
 imgPath = R'../assets-test/' + imgName + ".png"
 # imgPath = R'assets-test\\' + imgName + '.png'
 
@@ -26,6 +28,12 @@ imgHeight = imgToDraw.size[1]
 #creates a debug img to see the result
 # debugImg  = Image.new(mode="RGB", size=(imgWidth, imgHeight))
 # debugPixels = debugImg.load()
+
+# creates a canvas to draw the result
+root = tk.Tk()
+canvas = tk.Canvas(root, height=imgHeight/2, width=imgWidth/2)
+canvas.pack()
+
 
 ## constants part
 
@@ -44,6 +52,19 @@ NB_COLOR_TO_EXTRACT = 5
 NB_MIN_PIXELS_PER_ELEM = 0
 TRESHOLD_COLOR_DIFF = 50
 
+actualIdx = 0
+allPointsInOrder = []
+
+def draw_point():
+    global actualIdx
+    global element
+    if(actualIdx >= len(allPointsInOrder)):
+        print("Total time to draw img: %s seconds" % (time.time() - start_time_total))
+        return
+    canvas.create_rectangle((allPointsInOrder[actualIdx][0]/2, allPointsInOrder[actualIdx][1]/2, allPointsInOrder[actualIdx][0]/2, allPointsInOrder[actualIdx][1]/2), fill='red', width=1)
+    actualIdx += 1
+    root.after(1, draw_point)
+
 # function that fills the debug img with the elements
 def drawElements(elements: List[Element]):
     for element in elements:
@@ -56,6 +77,13 @@ def get_random_string(length: int):
     letters = string.ascii_lowercase
     result_str = ''.join(random.choice(letters) for i in range(length))
     return result_str
+
+def putAllPixelsInOrder(elements: List[Element]):
+    global allPointsInOrder
+    for element in elements:
+        for line in element.edgeLines:
+            for pixel in line.pixelsCoord:
+                allPointsInOrder.append(pixel)
 
 if __name__ == '__main__':
     ## PART TO CHANGE THE COLORS OF THE IMAGE TO A GIVEN NUMBER OF COLORS
@@ -88,15 +116,17 @@ if __name__ == '__main__':
     ## PART THAT GETS THE EDGES PIXEL OF EACH ELEMENT
     for element in elements:
         element.getEdgesPixels()
-    for element in elements:
-        print("nb pixels in elem: ", len(element.pixels))
-        print("nb pixels in edge: ", len(element.edgePixels))
-        print("nb lines: ", len(element.edgeLines))
-        countPixelsLine = 0
-        for line in element.edgeLines:
-            countPixelsLine += len(line.pixelsCoord)
-            print("linePixels: ", line.pixelsCoord)
-        print("nb pixels in edge lines: ", countPixelsLine)
+    #debug prints:
+    # for element in elements:
+    #     print("nb pixels in elem: ", len(element.pixels))
+    #     print("nb pixels in edge: ", len(element.edgePixels))
+    #     print("nb lines: ", len(element.edgeLines))
+    #     countPixelsLine = 0
+    #     for line in element.edgeLines:
+    #         countPixelsLine += len(line.pixelsCoord)
+    #         print("linePixels: ", line.pixelsCoord)
+    #     print("nb pixels in edge lines: ", countPixelsLine)
+    putAllPixelsInOrder(elements);
         
     print("GetEdgesPixels: %s seconds" % (time.time() - start_time))
 
@@ -105,4 +135,7 @@ if __name__ == '__main__':
     imgToDraw.show()
     imgToDraw.save("results-trash/" + imgName + "-" + str(NB_COLOR_TO_EXTRACT) + "-" + str(NB_MIN_PIXELS_PER_ELEM) + "-" + str(TRESHOLD_COLOR_DIFF)+ "-" + get_random_string(6) + ".png")
     print("Total time: %s seconds" % (time.time() - start_time_total))
+
+    draw_point()
+    root.mainloop()
     

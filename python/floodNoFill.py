@@ -3,8 +3,19 @@ from PIL import Image
 
 # a line as an array of pixelsCoord (x, y) that are connected
 class Line:
-    def __init__(self):
-        self.pixelsCoord = []
+    def __init__(self, pixelsCoord: List[tuple] = []):
+        # pixels in order that why this is not a set
+        self.pixelsCoord = pixelsCoord
+        self.pixelsCoordSet = set()
+        self.avgXY = (0, 0)
+    
+    def calculateAvgXY(self):
+        x = 0
+        y = 0
+        for (x, y) in self.pixelsCoord:
+            x += x
+            y += y
+        self.avgXY = (x / len(self.pixelsCoord), y / len(self.pixelsCoord))
 
 class Pixel:
   def __init__(self, x: int, y: int, color: tuple):
@@ -32,6 +43,7 @@ class Element:
                 edgePixelsSet.add((pixel.x, pixel.y))
                 self.edgePixels.append(pixel)
         
+        # now we have all the edge pixels, we create the lines to draw
         while(len(edgePixelsSet) > 0):
             startPixelCoord = edgePixelsSet.pop()
             self.createLine(startPixelCoord, edgePixelsSet)
@@ -61,6 +73,9 @@ class Element:
         pixelsCoordDownLeft.reverse()
         # adding the pixels coords to the line
         line.pixelsCoord = pixelsCoordDownLeft + [startPixelCoord] + pixelsCoordUpRight
+        line.pixelsCoordSet = set(line.pixelsCoord)
+        # calculate the average x and y for the line
+        line.calculateAvgXY()
         self.edgeLines.append(line)
 
     def getNextEdgePixel(self, pixelCoord: tuple, edgePixelsSet):
@@ -78,7 +93,6 @@ class Element:
             if (s, t) in edgePixelsSet:
                 return (s, t)
         return (-1, -1)
-
 
 
 """

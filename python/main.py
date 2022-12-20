@@ -1,13 +1,12 @@
 import tkinter as tk
 from PIL import Image
 import time
-import random
-import string
-import math
 from imgColorSwap import *
 from colorExtraction import *
 from floodNoFill import *
 from elementsCleaner import *
+from drawingClasses import *
+from utilityFuncs import *
 
 start_time_total = time.time()
 start_time = time.time()
@@ -54,90 +53,16 @@ TRESHOLD_COLOR_DIFF = 50
 actualIdx = 0
 allPointsInOrder = []
 
+# function used to draw each point of the image on the canvas
 def draw_point():
     global actualIdx
-    global element
+    global allPointsInOrder
     if(actualIdx >= len(allPointsInOrder)):
         print("Total time to draw img: %s seconds" % (time.time() - start_time_total))
         return
     canvas.create_rectangle((allPointsInOrder[actualIdx][0]/2, allPointsInOrder[actualIdx][1]/2, allPointsInOrder[actualIdx][0]/2, allPointsInOrder[actualIdx][1]/2), fill='red', width=1)
     actualIdx += 1
     root.after(1, draw_point)
-
-# function that fills the debug img with the elements
-def drawElements(elements: List[Element]):
-    for element in elements:
-        for pixel in element.pixels:
-            imgPixels[pixel.x, pixel.y] = element.color
-
-
-def get_random_string(length: int):
-    # choose from all lowercase letter
-    letters = string.ascii_lowercase
-    result_str = ''.join(random.choice(letters) for i in range(length))
-    return result_str
-
-# def pixelForDrawing(elements: List[Element]):
-#     global allPointsInOrder
-#     for element in elements:
-#         for line in element.edgeLines:
-#             for pixel in line.pixelsCoord:
-#                 allPointsInOrder.append(pixel)
-
-def pixelForDrawing(lines):
-    global allPointsInOrder
-    for line in lines:
-        for pixel in line.pixelsCoord:
-            allPointsInOrder.append(pixel)
-
-def sortLines(lines: set) -> List[Line]:
-    linesSorted: List[Line] = []
-    startingPoint: tuple = (0, 0)
-    while(len(lines) > 0):
-        startingPoint, closestLine = calculateClosestLine(startingPoint, lines)
-        if closestLine is not None:
-            lines.remove(closestLine)
-            linesSorted.append(closestLine)
-    return linesSorted
-    
-# funtion that calculate the closest line comparing the starting point with the first point of the line
-def calculateClosestLine(startingPoint: tuple, lines: set):
-    minDist = 100000000
-    minLine = None
-    for line in lines:
-        dist = math.dist(startingPoint, line.pixelsCoord[0])
-        if(dist < minDist):
-            minDist = dist
-            minLine = line
-    return minLine.pixelsCoord[len(minLine.pixelsCoord) - 1], minLine
-
-def rmTouchingLines(lines: set):
-    newLines: set = set()
-    while(len(lines) > 0):
-        line = lines.pop()
-        didBreak = False
-        for pixelCoord in line.pixelsCoord:
-            for cmpLine in lines:
-                for (s, t) in ((pixelCoord[0] + 1, pixelCoord[1]), (pixelCoord[0] - 1, pixelCoord[1]), (pixelCoord[0], pixelCoord[1] + 1), (pixelCoord[0], pixelCoord[1] - 1)):
-                    if (s, t) not in cmpLine.pixelsCoordSet:
-                        continue
-                    idxPixel = cmpLine.pixelsCoord.index((s, t))
-                    newLine1 = Line(cmpLine.pixelsCoord[:idxPixel])
-                    newLine2 = Line(cmpLine.pixelsCoord[idxPixel + 1:])
-                    if(len(newLine1.pixelsCoord) > 0):
-                        lines.add(newLine1)
-                    if(len(newLine2.pixelsCoord) > 0):
-                        lines.add(newLine2)
-                    lines.remove(cmpLine)
-                    didBreak = True
-                    break
-                if didBreak:
-                    break
-            if didBreak:
-                break
-        if not didBreak:
-            newLines.add(line)
-    return newLines
 
 if __name__ == '__main__':
     ## PART TO CHANGE THE COLORS OF THE IMAGE TO A GIVEN NUMBER OF COLORS
@@ -193,25 +118,24 @@ if __name__ == '__main__':
     allLinesToDraw = sortLines(allLinesToDrawSet)
     print("sortLines: %s seconds" % (time.time() - start_time))
     start_time = time.time()
-    pixelForDrawing(allLinesToDraw);
+
+    pixelForDrawing(allPointsInOrder, allLinesToDraw);
     # print("nb Lines to draw: ", len(allLinesToDrawSet))
     # nbPixels = 0
     # for line in allLinesToDrawSet:
     #     nbPixels += len(line.pixelsCoord)
     # print("nb Pixels to draw: ", nbPixels)
 
-
-
     # we pull all the pixels in an array so that tk can draw them on the canvas later
     # pixelForDrawing(elements)
     print("pixelForDrawing: %s seconds" % (time.time() - start_time))
     
     # we draw the elements on the image that gets saved
-    drawElements(elements)
+    drawElements(elements, imgPixels)
     imgToDraw.show()
     imgToDraw.save("results-trash/" + imgName + "-" + str(NB_COLOR_TO_EXTRACT) + "-" + str(NB_MIN_PIXELS_PER_ELEM) + "-" + str(TRESHOLD_COLOR_DIFF)+ "-" + get_random_string(6) + ".png")
     print("Total time: %s seconds" % (time.time() - start_time_total))
 
-    draw_point()
+    draw_point(root, canvas, start_time_total)
     root.mainloop()
     

@@ -1,6 +1,7 @@
 import random
 import string
 import math
+import copy
 from drawingClasses import *
 
 # function that fills the debug img with the elements
@@ -49,30 +50,32 @@ def calculateClosestLine(startingPoint: tuple, lines: set):
             minLine = line
     return minLine.pixelsCoord[len(minLine.pixelsCoord) - 1], minLine
 
-def rmTouchingLines(lines: set):
-    newLines: set = set()
+def rmTouchingLines(lines: List[Line]):
+    newLines = set()
+    didBreak = False
     while(len(lines) > 0):
+        print(len(lines))
         line = lines.pop()
         didBreak = False
         for pixelCoord in line.pixelsCoord:
-            for cmpLine in lines:
+            linesCpy = copy.deepcopy(lines)
+            while(len(linesCpy) > 0):
+                cmpLine = linesCpy.pop()
+                idxPop = len(linesCpy)
                 for (s, t) in ((pixelCoord[0] + 1, pixelCoord[1]), (pixelCoord[0] - 1, pixelCoord[1]), (pixelCoord[0], pixelCoord[1] + 1), (pixelCoord[0], pixelCoord[1] - 1)):
                     if (s, t) not in cmpLine.pixelsCoordSet:
                         continue
+                    lines.pop(idxPop)
                     idxPixel = cmpLine.pixelsCoord.index((s, t))
                     newLine1 = Line(cmpLine.pixelsCoord[:idxPixel])
                     newLine2 = Line(cmpLine.pixelsCoord[idxPixel + 1:])
                     if(len(newLine1.pixelsCoord) > 0):
-                        lines.add(newLine1)
+                        lines.append(newLine1)
+                        linesCpy.append(newLine1)
                     if(len(newLine2.pixelsCoord) > 0):
-                        lines.add(newLine2)
-                    lines.remove(cmpLine)
+                        lines.append(newLine2)
+                        linesCpy.append(newLine2)
                     didBreak = True
                     break
-                if didBreak:
-                    break
-            if didBreak:
-                break
-        if not didBreak:
-            newLines.add(line)
+        newLines.add(line)
     return newLines

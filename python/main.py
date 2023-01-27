@@ -12,7 +12,7 @@ start_time_total = time.time()
 start_time = time.time()
 
 imgName = "woman-bar-chosen-colors-20-200-20"
-imgName = "woman-bar-chosen-colors-20-200-20"
+imgName = "smile-face-large"
 imgPath = R'../assets-test/' + imgName + ".png"
 # imgPath = R'assets-test\\' + imgName + '.png'
 
@@ -98,10 +98,12 @@ if __name__ == '__main__':
     print("GetEdgesPixels: %s seconds" % (time.time() - start_time))
     start_time = time.time()
 
+    allLinesToDraw: List[Line]= []
     allLinesToDrawSet = set()
     for element in elements:
         for line in element.edgeLines:
             allLinesToDrawSet.add(line)
+            allLinesToDraw.append(line)
 
     #avant modif il y avait 16894 lignes à dessiner
     #avant modif il y avait 373616 pixels à dessiner
@@ -110,7 +112,7 @@ if __name__ == '__main__':
     #après modif il y a 11025 lignes à dessiner
     #après modif il y a 156192 pixels à dessiner
     ## PART THAT GETS RID of the lines that touch each other
-    allLinesToDrawSet = rmTouchingLines(allLinesToDrawSet)
+    allLinesToDrawSet = rmTouchingLines(allLinesToDraw)
     print("rmTouchingLines: %s seconds" % (time.time() - start_time))
     start_time = time.time()
 
@@ -120,11 +122,11 @@ if __name__ == '__main__':
     start_time = time.time()
 
     pixelForDrawing(allPointsInOrder, allLinesToDraw);
-    # print("nb Lines to draw: ", len(allLinesToDrawSet))
-    # nbPixels = 0
-    # for line in allLinesToDrawSet:
-    #     nbPixels += len(line.pixelsCoord)
-    # print("nb Pixels to draw: ", nbPixels)
+    print("nb Lines to draw: ", len(allLinesToDraw))
+    nbPixels = 0
+    for line in allLinesToDraw:
+        nbPixels += len(line.pixelsCoord)
+    print("nb Pixels to draw: ", nbPixels)
 
     # we pull all the pixels in an array so that tk can draw them on the canvas later
     # pixelForDrawing(elements)
@@ -136,6 +138,6 @@ if __name__ == '__main__':
     imgToDraw.save("results-trash/" + imgName + "-" + str(NB_COLOR_TO_EXTRACT) + "-" + str(NB_MIN_PIXELS_PER_ELEM) + "-" + str(TRESHOLD_COLOR_DIFF)+ "-" + get_random_string(6) + ".png")
     print("Total time: %s seconds" % (time.time() - start_time_total))
 
-    draw_point(root, canvas, start_time_total)
+    draw_point()
     root.mainloop()
     

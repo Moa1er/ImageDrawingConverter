@@ -5,7 +5,7 @@ class Line:
     def __init__(self, pixelsCoord: List[tuple] = []):
         # pixels in order that why this is not a set
         self.pixelsCoord = pixelsCoord
-        self.pixelsCoordSet = set()
+        self.pixelsCoordSet = set(pixelsCoord)
         self.avgXY = (0, 0)
     
     def calculateAvgXY(self):
@@ -74,7 +74,7 @@ class Element:
         line.pixelsCoord = pixelsCoordDownLeft + [startPixelCoord] + pixelsCoordUpRight
         line.pixelsCoordSet = set(line.pixelsCoord)
         # calculate the average x and y for the line
-        line.calculateAvgXY()
+        # line.calculateAvgXY()
         self.edgeLines.append(line)
 
     def getNextEdgePixel(self, pixelCoord: tuple, edgePixelsSet):
